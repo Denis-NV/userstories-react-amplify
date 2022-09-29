@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Amplify, API, graphqlOperation } from 'aws-amplify';
+import { withAuthenticator, Button, Heading } from '@aws-amplify/ui-react';
+
 import { createTodo } from './graphql/mutations';
 import { listTodos } from './graphql/queries';
-
 import awsExports from './aws-exports';
+
+import '@aws-amplify/ui-react/styles.css';
+
 Amplify.configure(awsExports);
 
 const initialState = { name: '', description: '' };
 
-const App = () => {
+const App = ({ signOut, user }) => {
   const [formState, setFormState] = useState(initialState);
   const [todos, setTodos] = useState([]);
 
@@ -43,34 +47,41 @@ const App = () => {
   }
 
   return (
-    <div style={styles.container}>
-      <h2>Amplify Todos</h2>
-      <input
-        onChange={(event) => setInput('name', event.target.value)}
-        style={styles.input}
-        value={formState.name}
-        placeholder="Name"
-      />
-      <input
-        onChange={(event) => setInput('description', event.target.value)}
-        style={styles.input}
-        value={formState.description}
-        placeholder="Description"
-      />
-      <button style={styles.button} onClick={addTodo}>
-        Create Todo
-      </button>
-      {todos.map((todo, index) => (
-        <div key={todo.id ? todo.id : index} style={styles.todo}>
-          <p style={styles.todoName}>{todo.name}</p>
-          <p style={styles.todoDescription}>{todo.description}</p>
-        </div>
-      ))}
-    </div>
+    <>
+      <div style={styles.header}>
+        <Heading level={1}>Hello {user.username}</Heading>
+        <Button onClick={signOut}>Sign out</Button>
+      </div>
+      <div style={styles.container}>
+        <h2>Amplify Todos</h2>
+        <input
+          onChange={(event) => setInput('name', event.target.value)}
+          style={styles.input}
+          value={formState.name}
+          placeholder="Name"
+        />
+        <input
+          onChange={(event) => setInput('description', event.target.value)}
+          style={styles.input}
+          value={formState.description}
+          placeholder="Description"
+        />
+        <button style={styles.button} onClick={addTodo}>
+          Create Todo
+        </button>
+        {todos.map((todo, index) => (
+          <div key={todo.id ? todo.id : index} style={styles.todo}>
+            <p style={styles.todoName}>{todo.name}</p>
+            <p style={styles.todoDescription}>{todo.description}</p>
+          </div>
+        ))}
+      </div>
+    </>
   );
 };
 
 const styles = {
+  header: { display: 'flex', justifyContent: 'space-between', direction: 'row', width: '100%', padding: '1rem' },
   container: {
     width: 400,
     margin: '0 auto',
@@ -86,4 +97,4 @@ const styles = {
   button: { backgroundColor: 'black', color: 'white', outline: 'none', fontSize: 18, padding: '12px 0px' },
 };
 
-export default App;
+export default withAuthenticator(App);
